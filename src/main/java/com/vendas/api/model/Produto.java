@@ -46,6 +46,7 @@ public class Produto implements Serializable {
     @Column(length = 200)
     private String observacao;
     
+    @NotNull(message = "{campo.categoria.obrigatoria}")
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "categoria_id", nullable = false, referencedColumnName = "id")
     private Categoria categoria;

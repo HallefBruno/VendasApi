@@ -1,9 +1,12 @@
 package com.vendas.api.service;
 
+import com.vendas.api.exception.NegocioException;
 import com.vendas.api.model.Categoria;
 import com.vendas.api.repository.CategoriaRepository;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +32,30 @@ public class CategoriaService {
             return categoriaAtual;
         }).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Categoria não encontrada!"));
         return novaCategoria;
+    }
+    
+    @Transactional
+    public void delete(Long id) {
+        categoriaRepository.findById(id)
+        .map(cliente -> {
+            categoriaRepository.deleteById(id);
+            return Void.TYPE;
+        }).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Categoria não encontrada!"));
+    }
+    
+    @Transactional
+    public void deletar(Long id) {
+        Optional<Categoria> categoriaOptional = categoriaRepository.findById(id);
+        if(categoriaOptional.isEmpty()) {
+            throw new EmptyResultDataAccessException(1);
+        }
+    }
+    
+    private void validarCategoriaCadastrada(Categoria categoria) {
+        Categoria categoriaEncontrada = categoriaRepository.findByNome(categoria.getNome());
+        if(categoriaEncontrada != null && !categoriaEncontrada.getId().equals(categoria.getId())) {
+            throw new NegocioException(String.format("A categoria %s já esta cadastrada", categoria.getNome().toUpperCase()));
+        }
     }
     
 }
