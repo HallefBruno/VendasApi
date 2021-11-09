@@ -1,12 +1,16 @@
 package com.vendas.api.controller;
 
 import com.vendas.api.exception.dto.ApiErrors;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -40,14 +44,25 @@ public class ApplicationControllerAdvice {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ApiErrors> internalError(Exception ex) {
+    public ResponseEntity<ApiErrors> handleDataIntegrityViolationException(Exception ex) {
         String messageError = ((DataIntegrityViolationException) ex).getMostSpecificCause().getMessage();
+        List<String> erros = new ArrayList<>();
         if(messageError.contains("duplicate key")) {
             messageError = "Esse registro já está cadastrado!";
+        } else if (messageError.contains("is not present in table")) {
+            String nomeTable = messageError.substring(messageError.lastIndexOf("table"), messageError.length());
+            nomeTable = nomeTable.substring(nomeTable.indexOf("\""), nomeTable.length());
+            erros.add(messageError);
+            return new ResponseEntity<>(new ApiErrors(erros), HttpStatus.BAD_REQUEST);
+        } else if (messageError.contains("referenced from table")) {
+            var mensagemUsuario = messageError.substring(messageError.lastIndexOf("table "), messageError.length());
+            mensagemUsuario = mensagemUsuario.substring(mensagemUsuario.indexOf("\""), mensagemUsuario.length()).replace("\"", "").replace(".", "");
+            erros.add(messageError);
+            erros.add("Não é possível excluir esse registro, está sendo referenciado em: "+mensagemUsuario);
+            return new ResponseEntity<>(new ApiErrors(erros), HttpStatus.BAD_REQUEST);
         }
         HttpStatus status = HttpStatus.BAD_REQUEST;
-        ApiErrors apiErrors = new ApiErrors(messageError);
-        return new ResponseEntity<>(apiErrors, status);
+        return new ResponseEntity<>(new ApiErrors(messageError), status);
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
@@ -62,6 +77,18 @@ public class ApplicationControllerAdvice {
     @ExceptionHandler(EmptyResultDataAccessException.class)
     public ApiErrors handleEmptyResultDataAccessException(EmptyResultDataAccessException ex, WebRequest request) {
         return new ApiErrors("Recurso não encontrado");
+    }
+
+    @ExceptionHandler(value=HttpMessageNotReadableException.class)
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    public ApiErrors handleUnprosseasableMsgException(HttpMessageNotReadableException msgNotReadable) {
+        return new ApiErrors("Erro na formatação do JSON");
+    }
+    
+    @ExceptionHandler(InvalidDataAccessApiUsageException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiErrors handleInvalidDataAccessApiUsageException() {
+        return new ApiErrors("O id fornecido não deve ser nulo !");
     }
 
 }

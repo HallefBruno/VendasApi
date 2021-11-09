@@ -2,6 +2,7 @@ package com.vendas.api.service;
 
 import com.vendas.api.exception.NegocioException;
 import com.vendas.api.model.Categoria;
+import com.vendas.api.model.dto.CategoriaDTO;
 import com.vendas.api.repository.CategoriaRepository;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -20,8 +21,9 @@ public class CategoriaService {
     private final CategoriaRepository categoriaRepository;
     
     @Transactional
-    public Categoria salvar(Categoria categoria) {
-        return categoriaRepository.save(categoria);
+    public CategoriaDTO salvar(CategoriaDTO categoriaDTO) {
+        Categoria categoria = categoriaRepository.save(Categoria.create(categoriaDTO));
+        return CategoriaDTO.create(categoria);
     }
     
     @Transactional
@@ -54,7 +56,7 @@ public class CategoriaService {
     private void validarCategoriaCadastrada(Categoria categoria) {
         Categoria categoriaEncontrada = categoriaRepository.findByNome(categoria.getNome());
         if(categoriaEncontrada != null && !categoriaEncontrada.getId().equals(categoria.getId())) {
-            throw new NegocioException(String.format("A categoria %s já esta cadastrada", categoria.getNome().toUpperCase()));
+            throw new NegocioException(String.format("A categoria %s já está cadastrada", categoria.getNome().toUpperCase()));
         }
     }
     

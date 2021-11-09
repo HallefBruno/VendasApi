@@ -10,9 +10,11 @@ import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
+import com.vendas.api.model.dto.CategoriaDTO;
 import lombok.Data;
 import lombok.ToString;
 import org.apache.commons.lang3.StringUtils;
+import org.modelmapper.ModelMapper;
 
 @Entity
 @Data
@@ -33,6 +35,10 @@ public class Categoria implements Serializable {
     @PreUpdate
     private void prePersistPreupdate() {
         this.nome = StringUtils.strip(this.nome);
+    }
+
+    public static Categoria create(CategoriaDTO categoriaDTO) {
+        return new ModelMapper().map(categoriaDTO, Categoria.class);
     }
     
 }

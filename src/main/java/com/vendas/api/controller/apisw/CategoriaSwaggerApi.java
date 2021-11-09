@@ -1,6 +1,7 @@
 package com.vendas.api.controller.apisw;
 
 import com.vendas.api.model.Categoria;
+import com.vendas.api.model.dto.CategoriaDTO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import java.util.List;
@@ -39,8 +40,8 @@ public interface CategoriaSwaggerApi {
     public void delete(@PathVariable(name = "id", required = true) Long id);
     
     @ApiOperation(value = "Salvar categoria")
-    @PostMapping
-    public Categoria salvar(@Valid @RequestBody Categoria categoria);
+    @PostMapping()
+    public CategoriaDTO salvar(@Valid @RequestBody CategoriaDTO categoriaDTO);
 
 }
 

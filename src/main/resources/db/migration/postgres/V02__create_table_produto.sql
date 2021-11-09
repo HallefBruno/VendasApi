@@ -1,4 +1,4 @@
-create table produto(
+CREATE TABLE IF NOT EXISTS produto(
     id serial not null primary key,
     descricao varchar(200) not null unique,
     quantidade int not null,

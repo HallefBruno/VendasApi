@@ -2,6 +2,7 @@ package com.vendas.api.controller;
 
 import com.vendas.api.controller.apisw.CategoriaSwaggerApi;
 import com.vendas.api.model.Categoria;
+import com.vendas.api.model.dto.CategoriaDTO;
 import com.vendas.api.repository.CategoriaRepository;
 import com.vendas.api.service.CategoriaService;
 import java.util.List;
@@ -42,8 +43,8 @@ public class CategoriaController implements CategoriaSwaggerApi {
     }
 
     @Override
-    public Categoria salvar(Categoria categoria) {
-        return categoriaRepository.save(categoria);
+    public CategoriaDTO salvar(CategoriaDTO categoria) {
+        return categoriaService.salvar(categoria);
     }
     
 }
